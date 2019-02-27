@@ -1528,6 +1528,15 @@ config SERIAL_OWL_CONSOLE
 	  Say 'Y' here if you wish to use Actions Semiconductor S500/S900 UART
 	  as the system console.
 
+config SERIAL_SUNXI
+	tristate "Allwinner A64 serial driver"
+	select SERIAL_CORE
+	help
+	  This driver is for the on-chip Serial Controller on
+	  Allwinner A64 CPUS.
+	  UART supports Rx & Tx functionality & RS485.
+	  Say 'Y' here if you wish to use the on-board serial port.
+
 endmenu
 
 config SERIAL_MCTRL_GPIO
