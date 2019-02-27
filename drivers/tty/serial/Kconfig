@@ -1560,6 +1560,15 @@ config SERIAL_RDA_CONSOLE
 	  Say 'Y' here if you wish to use the RDA8810PL UART as the system
 	  console. Only earlycon is implemented currently.
 
+config SERIAL_SUNXI
+	tristate "Allwinner A64 serial driver"
+	select SERIAL_CORE
+	help
+	  This driver is for the on-chip Serial Controller on
+	  Allwinner A64 CPUS.
+	  UART supports Rx & Tx functionality & RS485.
+	  Say 'Y' here if you wish to use the on-board serial port.
+
 endmenu
 
 config SERIAL_MCTRL_GPIO
