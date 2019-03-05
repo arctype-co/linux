@@ -284,4 +284,7 @@
 /* RDA UART */
 #define PORT_RDA	118
 
+/* Allwinner UART */
+#define PORT_SUNXI      119
+
 #endif /* _UAPILINUX_SERIAL_CORE_H */
