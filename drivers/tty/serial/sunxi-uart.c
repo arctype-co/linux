@@ -33,8 +33,6 @@
 #include <linux/serial_core.h>
 #include <linux/serial.h>
 #include <linux/clk.h>
-#include <linux/clk-private.h>
-#include <linux/clk/sunxi.h>
 #include <linux/pinctrl/consumer.h>
 
 #include <linux/of.h>
@@ -128,12 +126,6 @@ static inline void serial_out(struct uart_port *port, unsigned char value, int o
 static inline bool sw_is_console_port(struct uart_port *port)
 {
 	return port->cons && port->cons->index == port->line;
-}
-
-static inline void sw_uart_reset(struct sw_uart_port *sw_uport)
-{
-	sunxi_periph_reset_assert(sw_uport->mclk);
-	sunxi_periph_reset_deassert(sw_uport->mclk);
 }
 
 static unsigned int sw_uart_handle_rx(struct sw_uart_port *sw_uport, unsigned int lsr)
@@ -893,22 +885,12 @@ static void sw_uart_pm(struct uart_port *port, unsigned int state,
 
 	switch (state) {
 	case 0: /* Power up */
-		if (sw_uport->mclk->enable_count > 0) {
-			SERIAL_MSG("uart%d clk is already enable\n", sw_uport->id);
-			break;
-		}
-
 		ret = clk_prepare_enable(sw_uport->mclk);
 		if (ret) {
 			SERIAL_MSG("uart%d release reset failed\n", sw_uport->id);
 		}
 		break;
 	case 3: /* Power down */
-		if (sw_uport->mclk->enable_count == 0) {
-			SERIAL_MSG("uart%d clk is already disable\n", sw_uport->id);
-			break;
-		}
-
 		clk_disable_unprepare(sw_uport->mclk);
 		break;
 	default:
@@ -1499,7 +1481,6 @@ static int sw_uart_resume(struct device *dev)
 		  FPGA maybe fall into sw_uart_force_lcr(), so comment it. */
 		if (sw_is_console_port(port) && !console_suspend_enabled) {
 			spin_lock_irqsave(&port->lock, flags);
-			sw_uart_reset(sw_uport);
 			serial_out(port, sw_uport->fcr, SUNXI_UART_FCR);
 			serial_out(port, sw_uport->mcr, SUNXI_UART_MCR);
 			serial_out(port, sw_uport->lcr|SUNXI_UART_LCR_DLAB, SUNXI_UART_LCR);
