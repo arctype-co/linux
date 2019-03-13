@@ -1357,7 +1357,6 @@ static int sw_uart_probe(struct platform_device *pdev)
 	struct sw_uart_port *sw_uport;
 	struct sw_uart_pdata *pdata;
 	struct resource *res;
-	char uart_para[16] = {0};
 	int ret = -1;
 
 	pdev->id = of_alias_get_id(np, "serial");
@@ -1417,15 +1416,13 @@ static int sw_uart_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	snprintf(uart_para, sizeof(uart_para), "uart%d_port", pdev->id);
-	ret = of_property_read_u32(np, uart_para, &port->line);
+	ret = of_property_read_u32(np, "uart_port", &port->line);
 	if (ret) {
 		SERIAL_MSG("uart%d error to get port property\n", pdev->id);
 		return -EINVAL;
 	}
 
-	snprintf(uart_para, sizeof(uart_para), "uart%d_type", pdev->id);
-	ret = of_property_read_u32(np, uart_para, &pdata->io_num);
+	ret = of_property_read_u32(np, "uart_type", &pdata->io_num);
 	if (ret) {
 		SERIAL_MSG("uart%d error to get type property\n", pdev->id);
 		return -EINVAL;

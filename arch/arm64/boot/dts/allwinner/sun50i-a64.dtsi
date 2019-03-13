@@ -55,6 +55,14 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &uart2;
+		serial3 = &uart3;
+		serial4 = &uart4;
+	}
+
 	chosen {
 		#address-cells = <1>;
 		#size-cells = <1>;
@@ -738,6 +746,8 @@
 			reg-io-width = <4>;
 			clocks = <&ccu CLK_BUS_UART0>;
 			resets = <&ccu RST_BUS_UART0>;
+			uart_port = <0>;
+			uart_type = <2>;
 			status = "disabled";
 		};
 
@@ -749,6 +759,8 @@
 			reg-io-width = <4>;
 			clocks = <&ccu CLK_BUS_UART1>;
 			resets = <&ccu RST_BUS_UART1>;
+			uart_port = <1>;
+			uart_type = <4>;
 			status = "disabled";
 		};
 
@@ -760,6 +772,8 @@
 			reg-io-width = <4>;
 			clocks = <&ccu CLK_BUS_UART2>;
 			resets = <&ccu RST_BUS_UART2>;
+			uart_port = <2>;
+			uart_type = <4>;
 			status = "disabled";
 		};
 
@@ -771,6 +785,8 @@
 			reg-io-width = <4>;
 			clocks = <&ccu CLK_BUS_UART3>;
 			resets = <&ccu RST_BUS_UART3>;
+			uart_port = <3>;
+			uart_type = <4>;
 			status = "disabled";
 		};
 
@@ -782,6 +798,8 @@
 			reg-io-width = <4>;
 			clocks = <&ccu CLK_BUS_UART4>;
 			resets = <&ccu RST_BUS_UART4>;
+			uart_port = <4>;
+			uart_type = <4>;
 			status = "disabled";
 		};
 
