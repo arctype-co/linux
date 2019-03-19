@@ -731,15 +731,13 @@
 		};
 
 		uart0: serial@1c28000 {
-			compatible = "allwinner,sun50i-uart";
+			compatible = "snps,dw-apb-uart";
 			reg = <0x01c28000 0x400>;
 			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			clocks = <&ccu CLK_BUS_UART0>;
 			resets = <&ccu RST_BUS_UART0>;
-			uart_port = <0>;
-			uart_type = <2>;
 			status = "disabled";
 		};
 
