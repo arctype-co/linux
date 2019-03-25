@@ -485,9 +485,6 @@ static int sun4i_usb_phy_set_mode(struct phy *_phy,
 	struct sun4i_usb_phy_data *data = to_sun4i_usb_phy_data(phy);
 	int new_mode;
 
-	if (phy->index != 0)
-		return -EINVAL;
-
 	switch (mode) {
 	case PHY_MODE_USB_HOST:
 		new_mode = USB_DR_MODE_HOST;
@@ -500,6 +497,15 @@ static int sun4i_usb_phy_set_mode(struct phy *_phy,
 		break;
 	default:
 		return -EINVAL;
+	}
+
+	if (phy->index != 0) {
+		/* don't allow mode change for phy other than phy0 */
+		if (new_mode != data->dr_mode) {
+			return -EINVAL;
+		}
+
+		return 0;
 	}
 
 	if (new_mode != data->dr_mode) {
