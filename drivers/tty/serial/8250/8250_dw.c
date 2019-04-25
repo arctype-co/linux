@@ -53,6 +53,7 @@
 
 /* DesignWare specific register fields */
 #define DW_UART_MCR_SIRE		BIT(6)
+#define DW_UART_IER_PTIME		BIT(7)
 
 struct dw8250_data {
 	u8			usr_reg;
@@ -350,15 +351,27 @@ static int dw8250_rs485_config(struct uart_port *port,
 	 * are idempotent
 	 */
 	if (rs485->flags & SER_RS485_ENABLED) {
-		int ret = serial8250_em485_init(up);
+		int ret;
+
+		/* 
+		 * Enable Programmable THRE Interrupt Mode
+		 * in order to turn off RTS when transmission is finished.
+		 */
+		up->ier |= DW_UART_IER_PTIME;
+		port->serial_out(port, UART_IER, up->ier);
+
+		ret = serial8250_em485_init(up);
 
 		if (ret) {
 			rs485->flags &= ~SER_RS485_ENABLED;
 			port->rs485.flags &= ~SER_RS485_ENABLED;
 		}
+
 		return ret;
 	} else {
 		serial8250_em485_destroy(up);
+		up->ier &= ~DW_UART_IER_PTIME;
+		port->serial_out(port, UART_IER, up->ier);
 		return 0;
 	}
 }
