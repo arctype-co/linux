@@ -130,6 +130,8 @@ static inline void serial_dl_write(struct uart_8250_port *up, int value)
 
 struct uart_8250_port *serial8250_get_port(int line);
 
+int serial8250_tx_threshold_handle_irq(struct uart_port *port);
+
 void serial8250_rpm_get(struct uart_8250_port *p);
 void serial8250_rpm_put(struct uart_8250_port *p);
 

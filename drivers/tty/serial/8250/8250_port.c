@@ -1466,6 +1466,13 @@ static enum hrtimer_restart serial8250_em485_handle_stop_tx(struct hrtimer *t)
 	serial8250_rpm_get(p);
 	spin_lock_irqsave(&p->port.lock, flags);
 	if (em485->active_timer == &em485->stop_tx_timer) {
+		unsigned int timeout = 10000;
+		unsigned char lsr;
+		do {
+			udelay(1);
+			lsr = serial_in(p, UART_LSR);
+		} while (!(lsr & UART_LSR_TEMT) && (--timeout > 0));
+		DEBUG_AUTOCONF("stop tx delayed %d us\n", 10000 - timeout);
 		__do_stop_tx_rs485(p);
 		em485->active_timer = NULL;
 	}
@@ -1483,7 +1490,8 @@ static void start_hrtimer_ms(struct hrtimer *hrt, unsigned long msec)
 	hrtimer_start(hrt, t, HRTIMER_MODE_REL);
 }
 
-static void __stop_tx_rs485(struct uart_8250_port *p)
+/* Returns true if the transmission should be stopped */
+static int __stop_tx_rs485(struct uart_8250_port *p)
 {
 	struct uart_8250_em485 *em485 = p->em485;
 
@@ -1496,8 +1504,14 @@ static void __stop_tx_rs485(struct uart_8250_port *p)
 		start_hrtimer_ms(&em485->stop_tx_timer,
 				   p->port.rs485.delay_rts_after_send);
 	} else {
+		unsigned char lsr = serial_in(p, UART_LSR);
+		if ((lsr & BOTH_EMPTY) != BOTH_EMPTY)
+			return 0;
+		em485->active_timer = NULL;
 		__do_stop_tx_rs485(p);
 	}
+
+	return 1;
 }
 
 static inline void __do_stop_tx(struct uart_8250_port *p)
@@ -1514,19 +1528,14 @@ static inline void __stop_tx(struct uart_8250_port *p)
 	struct uart_8250_em485 *em485 = p->em485;
 
 	if (em485) {
-		unsigned char lsr = serial_in(p, UART_LSR);
 		/*
-		 * To provide required timeing and allow FIFO transfer,
+		 * To provide required timing and allow FIFO transfer,
 		 * __stop_tx_rs485() must be called only when both FIFO and
 		 * shift register are empty. It is for device driver to enable
 		 * interrupt on TEMT.
 		 */
-		if ((lsr & BOTH_EMPTY) != BOTH_EMPTY)
+		if(!__stop_tx_rs485(p))
 			return;
-
-		em485->active_timer = NULL;
-
-		__stop_tx_rs485(p);
 	}
 	__do_stop_tx(p);
 }
@@ -1904,7 +1913,7 @@ static int serial8250_default_handle_irq(struct uart_port *port)
  * the IIR register. In this case, the THRE interrupt indicates the FIFO
  * has space available. Load it up with tx_loadsz bytes.
  */
-static int serial8250_tx_threshold_handle_irq(struct uart_port *port)
+int serial8250_tx_threshold_handle_irq(struct uart_port *port)
 {
 	unsigned long flags;
 	unsigned int iir = serial_port_in(port, UART_IIR);
